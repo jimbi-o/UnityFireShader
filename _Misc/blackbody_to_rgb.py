@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import simps
-from scipy.interpolate import interp1d
 
 # wavelength, x, y, z
 cie_1931 = np.array([
@@ -73,28 +72,37 @@ def xyz_to_rgb(XYZ):
 
     return rgb_linear
 
+def print_for_cpp(arr):
+    for sub_arr in arr:
+        print("{", end="")
+        for i, val in enumerate(sub_arr):
+            val_float = float(val)
+            if i < len(sub_arr) - 1:
+                print(f"{val_float:.9}f, ", end="")
+            else:
+                print(f"{val_float:.9}f", end="")
+        print("},")
+
 # Generate wavelengths from 380nm to 780nm
-wavelengths = np.linspace(380, 780, 101)  # Wavelengths from 380nm to 780nm
+wavelengths = np.linspace(380, 780, 128)  # Wavelengths from 380nm to 780nm
 
 # Interpolate the color matching functions
-x_interp = interp1d(cie_1931[:,0], cie_1931[:,1], kind='cubic')
-y_interp = interp1d(cie_1931[:,0], cie_1931[:,2], kind='cubic')
-z_interp = interp1d(cie_1931[:,0], cie_1931[:,3], kind='cubic')
-
-# Constants
-D65_illuminant = np.array([94.81, 100.00, 107.30])
+x_interp = np.interp(wavelengths, cie_1931[:,0], cie_1931[:,1])
+y_interp = np.interp(wavelengths, cie_1931[:,0], cie_1931[:,2])
+z_interp = np.interp(wavelengths, cie_1931[:,0], cie_1931[:,3])
 
 # Define temperatures (in Kelvin)
-temperatures = np.linspace(600, 1100, 5) # daily seen fire temperature range
-# temperatures = np.linspace(400, 8000, 100)
+temperatures = np.linspace(600, 1100, 64) # daily seen fire temperature range
+#temperatures = np.linspace(450, 8000, 64)
 
 # Calculate spectral radiance for each temperature and convert to XYZ
 XYZ_values = []
+wavelengths_in_meter = wavelengths * 1e-9
 for temperature in temperatures:
     spectral_radiance_data = planck(wavelengths, temperature)
-    X = simps(spectral_radiance_data * x_interp(wavelengths), wavelengths)
-    Y = simps(spectral_radiance_data * y_interp(wavelengths), wavelengths)
-    Z = simps(spectral_radiance_data * z_interp(wavelengths), wavelengths)
+    X = simps(spectral_radiance_data * x_interp, wavelengths_in_meter)
+    Y = simps(spectral_radiance_data * y_interp, wavelengths_in_meter)
+    Z = simps(spectral_radiance_data * z_interp, wavelengths_in_meter)
     XYZ_values.append((X, Y, Z))
 
 # Convert XYZ to RGB
@@ -123,4 +131,4 @@ plt.legend()
 
 plt.savefig('black_body_radiation.png')
 
-print(RGB_values)
+print_for_cpp(RGB_values)
