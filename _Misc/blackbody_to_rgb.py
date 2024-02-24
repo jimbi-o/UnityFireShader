@@ -72,16 +72,16 @@ def xyz_to_rgb(XYZ):
 
     return rgb_linear
 
-def print_for_cpp(arr):
+def print_for_hlsl(arr):
     for sub_arr in arr:
-        print("{", end="")
+        print("float3(", end="")
         for i, val in enumerate(sub_arr):
             val_float = float(val)
             if i < len(sub_arr) - 1:
                 print(f"{val_float:.9}f, ", end="")
             else:
                 print(f"{val_float:.9}f", end="")
-        print("},")
+        print("),")
 
 # Generate wavelengths from 380nm to 780nm
 wavelengths = np.linspace(380, 780, 128)  # Wavelengths from 380nm to 780nm
@@ -92,8 +92,8 @@ y_interp = np.interp(wavelengths, cie_1931[:,0], cie_1931[:,2])
 z_interp = np.interp(wavelengths, cie_1931[:,0], cie_1931[:,3])
 
 # Define temperatures (in Kelvin)
-temperatures = np.linspace(600, 1100, 64) # daily seen fire temperature range
-#temperatures = np.linspace(450, 8000, 64)
+#temperatures = np.linspace(600, 1100, 64) # daily seen fire temperature range
+temperatures = np.linspace(450, 8000, 64)
 
 # Calculate spectral radiance for each temperature and convert to XYZ
 XYZ_values = []
@@ -131,4 +131,4 @@ plt.legend()
 
 plt.savefig('black_body_radiation.png')
 
-print_for_cpp(RGB_values)
+print_for_hlsl(RGB_values)
