@@ -3,14 +3,15 @@ Shader "Custom/FireShader"
   Properties
   {
     _StepSize("Step Size", Float) = 0.01
-    [Range(0,100)] _Temperature("Temperature Div 100", Float) = 40
-    _Density("Density", Float) = 0.1
+    [Range(0,100)] _TemperatureScale("Temperature Scale", Float) = 40
+    _DensityThreshold("Density Threshold", Float) = 20
+    _NoiseTex("Texture", 3D) = "white" {}
   }
   SubShader
   {
     Tags { "RenderType"="Transparent" }
     Tags { "Queue" = "Transparent" }
-    Blend SrcAlpha OneMinusSrcAlpha
+    Blend One One
     LOD 100
 
     Pass
@@ -34,10 +35,12 @@ Shader "Custom/FireShader"
       };
 
       float _StepSize;
-      float _Temperature;
-      float _Density;
+      float _TemperatureScale;
+      float _DensityThreshold;
       float3 _BoxMin;
       float3 _BoxMax;
+      sampler3D _NoiseTex;
+      float4x4 _NoiseTexCoordMat;
       static const float _TemperatureMin = 450 * 0.01;
       static const float _TemperatureMax = 8000 * 0.01;
       static const float _TemperatureCount = 64;
@@ -131,7 +134,6 @@ Shader "Custom/FireShader"
 
       fixed4 frag (v2f i) : SV_Target
       {
-        float4 col = float4(GetApproximateRadianceFromTemperature(_Temperature), 0.0f);
         float3 rayDir = normalize(i.worldPos - _WorldSpaceCameraPos);
         float3 rayPos = i.worldPos;
 
@@ -149,24 +151,28 @@ Shader "Custom/FireShader"
 
         rayPos += rayDir * tNear;
 
+        float3 accumulated_color = float3(0,0,0);
         float totalDistance = 0.0f;
-        float alpha = 0.0;
+        float density = 0.0;
 
-        for (int iter = 0; iter < 100; iter++)
+        for (int iter = 0; iter < 32; iter++)
         {
           totalDistance += _StepSize;
           if (totalDistance >= tFar - tNear)
             break;
 
-          alpha += _Density;
-          if (alpha >= 0.99)
+          float3 uvw_coord = mul(_NoiseTexCoordMat, float4(rayPos,1));
+          fixed4 noise = tex3D(_NoiseTex, uvw_coord);
+          float3 color = GetApproximateRadianceFromTemperature(noise.x * _TemperatureScale);
+          density += noise.y;
+          accumulated_color += color * noise.y;
+          if (density >= _DensityThreshold)
             break;
 
           rayPos += rayDir * _StepSize;
         }
 
-        col.a = alpha;
-        return col;
+        return float4(accumulated_color, 0.0f);
       }
     ENDCG
     }

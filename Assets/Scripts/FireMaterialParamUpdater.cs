@@ -29,6 +29,7 @@ public class FireMaterialParamUpdater : MonoBehaviour
             Bounds bounds = rendererInstance.bounds;
             material.SetVector("_BoxMin", bounds.min);
             material.SetVector("_BoxMax", bounds.max);
+            material.SetMatrix("_NoiseTexCoordMat", transform.worldToLocalMatrix * Matrix4x4.Translate(Vector3.one * 0.5f));
         }
     }
 }
