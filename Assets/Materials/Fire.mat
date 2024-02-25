@@ -52,7 +52,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NoiseTex:
-        m_Texture: {fileID: 11700000, guid: 2a08bba160d1f5146acdbfef122b8e06, type: 3}
+        m_Texture: {fileID: 11700000, guid: a4b002cb948084441833524b40dfd8ff, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -83,7 +83,7 @@ Material:
     - _SrcBlend: 1
     - _StepSize: 0.01
     - _Temperature: 12.7
-    - _TemperatureScale: 15
+    - _TemperatureScale: 14
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

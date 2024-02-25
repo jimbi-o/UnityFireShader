@@ -155,7 +155,7 @@ Shader "Custom/FireShader"
         float totalDistance = 0.0f;
         float density = 0.0;
 
-        for (int iter = 0; iter < 32; iter++)
+        for (int iter = 0; iter < 64; iter++)
         {
           totalDistance += _StepSize;
           if (totalDistance >= tFar - tNear)
